@@ -1,0 +1,4 @@
+content   better-copy             chrome/content/
+skin      better-copy   default   chrome/skin/
+locale    better-copy   en-US     chrome/locale/en-US/
+overlay	chrome://zotero/content/zoteroPane.xul chrome://better-copy/content/overlay.xul

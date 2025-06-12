@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://better-copy/skin/overlay.css" type="text/css"?>
+
+<overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+  <menupopup id="menu_ToolsPopup">
+    <menuitem id="better-copy-prefs"
+              label="Better Copy Preferences"
+              oncommand="window.openDialog('chrome://better-copy/content/prefs.xul', 'better-copy-prefs', 'chrome,modal');"/>
+  </menupopup>
+</overlay>
