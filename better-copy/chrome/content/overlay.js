@@ -30,7 +30,13 @@ function formatAnnotation(annotation, parentItem) {
 			.replace(/\$\{title\}/g, title)
 			.replace(/\$\{creators\}/g, creators)
 			.replace(/\$\{year\}/g, year)
-			.replace(/\$\{tags\}/g, tags);
+			.replace(/\$\{tags\}/g, tags)
+			.replace(/\$\{color\}/g, annotation.color || "")
+			.replace(/\$\{comment\}/g, annotation.comment || "")
+			.replace(/\$\{type\}/g, annotation.annotationType || "")
+			.replace(/\$\{doi\}/g, parentItem ? parentItem.getField("DOI") : "")
+			.replace(/\$\{url\}/g, parentItem ? parentItem.getField("url") : "")
+			.replace(/\$\{citekey\}/g, parentItem ? (parentItem.getField("citationKey") || parentItem.getField("citekey") || "") : "");
 	} catch (e) {
 		log("Error formatting annotation: " + e);
 		return annotation && annotation.text ? annotation.text : "";

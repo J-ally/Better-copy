@@ -11,7 +11,13 @@
 
   <vbox>
     <description>Set your preferred export format:</description>
-    <textbox id="exportFormat" flex="1"/>
+    <textbox id="exportFormat" flex="1"
+             tooltiptext="Use variables like ${text}, ${title}, ${year}, ${citekey}, etc."/>
+    <description>
+      <b>Available template variables:</b>
+    </description>
+    <textbox readonly="true" multiline="true" flex="1"
+             value="${text}, ${page}, ${title}, ${creators}, ${year}, ${tags}, ${color}, ${comment}, ${type}, ${doi}, ${url}, ${shortTitle}, ${citekey}"/>
   </vbox>
 
   <script type="application/javascript" src="prefs.js"/>
