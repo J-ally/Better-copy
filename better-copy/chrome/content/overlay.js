@@ -1,5 +1,7 @@
-function log(msg) {
-	Zotero.debug("Better Copy: " + msg);
+Zotero.debug("Better Copy: overlay.js file loaded!");
+
+function log(message) {
+	Zotero.debug("Better Copy: " + message);
 }
 
 function formatAnnotation(annotation, parentItem) {
@@ -11,61 +13,83 @@ function formatAnnotation(annotation, parentItem) {
 		let year = parentItem ? parentItem.getField("date") : "";
 		let tags = annotation && annotation.tags ? annotation.tags.map(t => `#${t}`).join(" ") : "";
 
-		let format = Services.prefs.getCharPref("extensions.better-copy.format", "plain");
-		if (format === "markdown") {
-			// Convert to markdown
-		} else if (format === "html") {
-			// Convert to HTML
-		} else {
-			// Plain text
-		}
+		// Get the template string from preferences
+		let format = Services.prefs.getCharPref("extensions.better-copy.format", "${text}");
 
 		if (!format) {
 			log("No format string found in preferences.");
 			format = '${text}';
 		}
+
+		// Replace template variables with actual values
 		return format
 			.replace(/\$\{text\}/g, text)
 			.replace(/\$\{page\}/g, page)
 			.replace(/\$\{title\}/g, title)
 			.replace(/\$\{creators\}/g, creators)
 			.replace(/\$\{year\}/g, year)
-			.replace(/\$\{tags\}/g, tags)
-			.replace(/\$\{color\}/g, annotation.color || "")
-			.replace(/\$\{comment\}/g, annotation.comment || "")
-			.replace(/\$\{type\}/g, annotation.annotationType || "")
-			.replace(/\$\{doi\}/g, parentItem ? parentItem.getField("DOI") : "")
-			.replace(/\$\{url\}/g, parentItem ? parentItem.getField("url") : "")
-			.replace(/\$\{citekey\}/g, parentItem ? (parentItem.getField("citationKey") || parentItem.getField("citekey") || "") : "");
+			.replace(/\$\{tags\}/g, tags);
+
 	} catch (e) {
-		log("Error formatting annotation: " + e);
+		log("Error in formatAnnotation: " + e);
 		return annotation && annotation.text ? annotation.text : "";
 	}
 }
 
 function overrideCopyAnnotation() {
 	try {
-		let mainWin = Zotero.getMainWindow();
-		if (mainWin && mainWin.ZoteroPDFAnnotation && mainWin.ZoteroPDFAnnotation.prototype) {
-			mainWin.ZoteroPDFAnnotation.prototype.copy = function () {
-				try {
-					let parentItem = Zotero.Items.get(this.parentItemID);
-					let md = formatAnnotation(this, parentItem);
-					Zotero.Utilities.Internal.copyToClipboard(md);
-					log("Annotation copied as Markdown!");
-				} catch (e) {
-					log("Error copying annotation: " + e);
-				}
-			};
-			log("Better Copy: Overrode annotation copy function.");
-		} else {
-			log("Better Copy: Could not find ZoteroPDFAnnotation to override.");
-		}
+		log("Setting up Better Copy annotation override...");
+
+		// Hook into Zotero's translation system
+		let originalGetTranslators = Zotero.Translators.getByType;
+
+		Zotero.Translators.getByType = function (type) {
+			let translators = originalGetTranslators.call(this, type);
+
+			// Intercept note/annotation export
+			if (type === 'export') {
+				log("Export translators requested, checking for annotation copy...");
+
+				// Find the Note Markdown translator and modify it
+				translators.forEach(translator => {
+					if (translator.label === 'Note Markdown') {
+						log("Found Note Markdown translator, overriding...");
+
+						let originalCode = translator.code;
+						translator.code = function () {
+							// Your custom formatting logic here
+							log("Custom Note Markdown translator running!");
+
+							// Get the annotation being copied
+							// This is a simplified approach - you might need to adjust based on Zotero's internal structure
+							return originalCode.apply(this, arguments);
+						};
+					}
+				});
+			}
+
+			return translators;
+		};
+
+		log("Better Copy: Successfully set up translation override.");
 	} catch (e) {
 		log("Error in overrideCopyAnnotation: " + e);
 	}
 }
 
-window.addEventListener('load', function () {
-	overrideCopyAnnotation();
-});
+// Initialize when Zotero is ready
+if (typeof Zotero !== 'undefined') {
+	Zotero.Promise.delay(1000).then(() => {
+		overrideCopyAnnotation();
+	});
+} else {
+	window.addEventListener('load', function () {
+		if (typeof Zotero !== 'undefined') {
+			Zotero.Promise.delay(1000).then(() => {
+				overrideCopyAnnotation();
+			});
+		}
+	});
+}
+
+

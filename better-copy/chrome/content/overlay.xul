@@ -1,10 +1,19 @@
 <?xml version="1.0"?>
 <?xml-stylesheet href="chrome://better-copy/skin/overlay.css" type="text/css"?>
 
-<overlay xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+<overlay id="better-copy-overlay"
+         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+  
+  <script src="overlay.js"/>
+  
+  <!-- Add menu item to test if overlay is working -->
   <menupopup id="menu_ToolsPopup">
     <menuitem id="better-copy-prefs"
               label="Better Copy Preferences"
               oncommand="window.openDialog('chrome://better-copy/content/prefs.xul', 'better-copy-prefs', 'chrome,modal');"/>
+    <menuitem id="better-copy-test" 
+              label="Better Copy Test" 
+              oncommand="Zotero.debug('Better Copy: Menu item clicked!')"/>
   </menupopup>
+  
 </overlay>
