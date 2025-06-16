@@ -7,18 +7,4 @@
     <!-- Include our JavaScript -->
     <script type="application/javascript" src="chrome://better-copy/content/overlay.js"/>
 
-    <!-- Add menu item to Tools menu -->
-    <menupopup id="menu_ToolsPopup">
-        <menuitem id="better-copy-preferences" 
-                  label="Better Copy Preferences..." 
-                  oncommand="BetterCopy.openPreferences()"/>
-    </menupopup>
-
-    <!-- Add context menu item to items tree -->
-    <popup id="zotero-itemmenu">
-        <menuitem id="better-copy-annotation" 
-                  label="Copy as Markdown (Better Copy)" 
-                  oncommand="BetterCopy.copySelectedAnnotationFormatted()"/>
-    </popup>
-
 </overlay>
