@@ -6,11 +6,8 @@
   
   <script src="overlay.js"/>
   
-  <!-- Add menu item to test if overlay is working -->
+  <!-- Test menu item to verify overlay is working -->
   <menupopup id="menu_ToolsPopup">
-    <menuitem id="better-copy-prefs"
-              label="Better Copy Preferences"
-              oncommand="window.openDialog('chrome://better-copy/content/prefs.xul', 'better-copy-prefs', 'chrome,modal');"/>
     <menuitem id="better-copy-test" 
               label="Better Copy Test" 
               oncommand="Zotero.debug('Better Copy: Menu item clicked!')"/>
