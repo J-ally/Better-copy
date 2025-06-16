@@ -1,4 +1,2 @@
 content better-copy chrome/content/
 overlay chrome://zotero/content/zoteroPane.xul chrome://better-copy/content/overlay.xul
-skin better-copy classic/1.0 chrome/skin/
-locale better-copy en-US chrome/locale/en-US/

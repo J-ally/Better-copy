@@ -3,30 +3,30 @@
         xmlns:em="http://www.mozilla.org/2004/em-rdf#">
 
     <Description about="urn:mozilla:install-manifest">
-        <em:id>better-copy@example.com</em:id>
+        <em:id>better-copy@josephallyndree.com</em:id>
         <em:name>Better Copy</em:name>
-        <em:version>0.1</em:version>
-        <em:multiprocessCompatible>true</em:multiprocessCompatible>
-        <!-- <em:updateURL>https://zotero-download.s3.amazonaws.com/tmp/make-it-red/update.rdf</em:updateURL> -->
-        <em:homepageURL>https://github.com/J-ally/Better-copy</em:homepageURL>
-        <em:localized>
-            <Description>
-                <em:locale>en-US</em:locale>
-                <em:name>Better Copy </em:name>
-                <em:description>Allows formatting on annotation copying outside of zotero</em:description>
-            </Description>
-        </em:localized>
-
-        <em:creator>Zotero</em:creator>
-        <em:type>2</em:type> <!-- type=extension -->
-        <em:iconURL>chrome://better-copy/skin/icon.png</em:iconURL>
-        <em:icon64URL>chrome://better-copy/skin/icon64.png</em:icon64URL>
-
+        <em:version>1.0.0</em:version>
+        <em:description>Enhance annotation copying in Zotero with customizable Markdown formatting</em:description>
+        <em:creator>Joseph Allyndree</em:creator>
+        <em:homepageURL>https://github.com/yourusername/better-copy</em:homepageURL>
+        <em:type>2</em:type>
+        <em:bootstrap>false</em:bootstrap>
+        
+        <!-- Zotero 6 compatibility -->
         <em:targetApplication>
             <Description>
                 <em:id>zotero@chnm.gmu.edu</em:id>
                 <em:minVersion>6.0</em:minVersion>
-                <em:maxVersion>*</em:maxVersion>
+                <em:maxVersion>6.*</em:maxVersion>
+            </Description>
+        </em:targetApplication>
+        
+        <!-- Firefox compatibility (required for Zotero) -->
+        <em:targetApplication>
+            <Description>
+                <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
+                <em:minVersion>60.0</em:minVersion>
+                <em:maxVersion>102.*</em:maxVersion>
             </Description>
         </em:targetApplication>
     </Description>

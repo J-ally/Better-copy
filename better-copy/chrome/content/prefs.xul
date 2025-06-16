@@ -1,0 +1,73 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+
+<dialog id="better-copy-preferences" 
+        title="Better Copy Preferences"
+        xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+        style="width: 500px; height: 400px;"
+        buttons="accept,cancel"
+        ondialogaccept="return BetterCopyPrefs.save();"
+        ondialogcancel="return true;"
+        onload="BetterCopyPrefs.load();">
+
+    <script type="application/javascript">
+    <![CDATA[
+        var BetterCopyPrefs = {
+            load: function() {
+                let format = Zotero.Prefs.get("extensions.better-copy.format", false);
+                if (!format) {
+                    format = "> ${text}\n\n**${creators} (${year})** - *${title}* - Page ${page}\n\n${tags}";
+                }
+                document.getElementById("format-textbox").value = format;
+            },
+
+            save: function() {
+                let format = document.getElementById("format-textbox").value;
+                Zotero.Prefs.set("extensions.better-copy.format", format);
+                return true;
+            },
+
+            resetToDefault: function() {
+                let defaultFormat = "> ${text}\n\n**${creators} (${year})** - *${title}* - Page ${page}\n\n${tags}";
+                document.getElementById("format-textbox").value = defaultFormat;
+            }
+        };
+    ]]>
+    </script>
+
+    <vbox flex="1" style="padding: 10px;">
+        <label value="Format Template for Copied Annotations:"/>
+        
+        <textbox id="format-textbox" 
+                 multiline="true" 
+                 flex="1" 
+                 style="font-family: monospace; margin: 10px 0;"/>
+        
+        <hbox>
+            <button label="Reset to Default" oncommand="BetterCopyPrefs.resetToDefault()"/>
+            <spacer flex="1"/>
+        </hbox>
+        
+        <separator/>
+        
+        <label value="Available Variables:"/>
+        <vbox style="margin: 10px 0;">
+            <label value="• ${text} - The highlighted text"/>
+            <label value="• ${page} - Page number"/>
+            <label value="• ${title} - Document title"/>
+            <label value="• ${creators} - Authors/creators"/>
+            <label value="• ${year} - Publication year"/>
+            <label value="• ${tags} - Annotation tags"/>
+            <label value="• ${comment} - Your comment on the annotation"/>
+        </vbox>
+        
+        <separator/>
+        
+        <label value="Keyboard Shortcuts:"/>
+        <vbox style="margin: 10px 0;">
+            <label value="• Ctrl+C (Cmd+C) - Copy with Better Copy formatting"/>
+            <label value="• Ctrl+Shift+C (Cmd+Shift+C) - Force Better Copy formatting"/>
+        </vbox>
+    </vbox>
+
+</dialog>

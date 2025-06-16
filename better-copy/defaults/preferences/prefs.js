@@ -1,3 +1,7 @@
+// Default preferences for Better Copy
+pref("extensions.better-copy.format", "> ${text}\n\n**${creators} (${year})** - *${title}* - Page ${page}\n\n${tags}");
+pref("extensions.better-copy.enabled", true);
+
 window.addEventListener("load", function () {
     // Set a default template if none exists
     let format = Services.prefs.getCharPref("extensions.better-copy.format", "> ${text}\n\n**${creators} (${year})** - *${title}*, p. ${page}");

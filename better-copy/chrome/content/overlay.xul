@@ -1,16 +1,24 @@
 <?xml version="1.0"?>
-<?xml-stylesheet href="chrome://better-copy/skin/overlay.css" type="text/css"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
 
 <overlay id="better-copy-overlay"
          xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-  
-  <script src="overlay.js"/>
-  
-  <!-- Test menu item to verify overlay is working -->
-  <menupopup id="menu_ToolsPopup">
-    <menuitem id="better-copy-test" 
-              label="Better Copy Test" 
-              oncommand="Zotero.debug('Better Copy: Menu item clicked!')"/>
-  </menupopup>
-  
+
+    <!-- Include our JavaScript -->
+    <script type="application/javascript" src="chrome://better-copy/content/overlay.js"/>
+
+    <!-- Add menu item to Tools menu -->
+    <menupopup id="menu_ToolsPopup">
+        <menuitem id="better-copy-preferences" 
+                  label="Better Copy Preferences..." 
+                  oncommand="BetterCopy.openPreferences()"/>
+    </menupopup>
+
+    <!-- Add context menu item to items tree -->
+    <popup id="zotero-itemmenu">
+        <menuitem id="better-copy-annotation" 
+                  label="Copy as Markdown (Better Copy)" 
+                  oncommand="BetterCopy.copySelectedAnnotationFormatted()"/>
+    </popup>
+
 </overlay>

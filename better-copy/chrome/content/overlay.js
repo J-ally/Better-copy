@@ -1,95 +1,196 @@
 Zotero.debug("Better Copy: overlay.js file loaded!");
 
-function log(message) {
-	Zotero.debug("Better Copy: " + message);
-}
+var BetterCopy = {
+	initialized: false,
 
-function formatAnnotation(annotation, parentItem) {
-	try {
-		let text = annotation && annotation.text ? annotation.text : "";
-		let page = annotation && (annotation.pageLabel || annotation.page) ? (annotation.pageLabel || annotation.page) : "";
-		let title = parentItem ? parentItem.getField("title") : "";
-		let creators = parentItem && parentItem.getCreators ? parentItem.getCreators().map(c => c.lastName).join(", ") : "";
-		let year = parentItem ? parentItem.getField("date") : "";
-		let tags = annotation && annotation.tags ? annotation.tags.map(t => `#${t}`).join(" ") : "";
+	init: function () {
+		if (this.initialized) return;
 
-		// Get the template string from preferences
-		let format = Services.prefs.getCharPref("extensions.better-copy.format", "${text}");
+		Zotero.debug("Better Copy: Initializing plugin...");
 
-		if (!format) {
-			log("No format string found in preferences.");
-			format = '${text}';
+		// Wait for Zotero to be fully loaded
+		if (!Zotero.initialized) {
+			Zotero.debug("Better Copy: Waiting for Zotero to initialize...");
+			setTimeout(() => this.init(), 1000);
+			return;
 		}
 
-		// Replace template variables with actual values
-		return format
-			.replace(/\$\{text\}/g, text)
-			.replace(/\$\{page\}/g, page)
-			.replace(/\$\{title\}/g, title)
-			.replace(/\$\{creators\}/g, creators)
-			.replace(/\$\{year\}/g, year)
-			.replace(/\$\{tags\}/g, tags);
+		this.setupEventListeners();
+		this.initialized = true;
+		Zotero.debug("Better Copy: Plugin initialized successfully!");
+	},
 
-	} catch (e) {
-		log("Error in formatAnnotation: " + e);
-		return annotation && annotation.text ? annotation.text : "";
-	}
-}
+	setupEventListeners: function () {
+		// Hook into general copy operations
+		this.hookGeneralCopy();
 
-function overrideCopyAnnotation() {
-	try {
-		log("Setting up Better Copy annotation override...");
+		// Add keyboard shortcut
+		this.addKeyboardShortcut();
+	},
 
-		// Hook into Zotero's translation system
-		let originalGetTranslators = Zotero.Translators.getByType;
+	hookGeneralCopy: function () {
+		// Hook into Zotero's general copy functionality
+		document.addEventListener('keydown', (event) => {
+			if ((event.ctrlKey || event.metaKey) && event.key === 'c') {
+				this.handleGeneralCopy(event);
+			}
+		}, true);
+	},
 
-		Zotero.Translators.getByType = function (type) {
-			let translators = originalGetTranslators.call(this, type);
+	handleGeneralCopy: function (event) {
+		try {
+			// Check if we're in the items pane and have an annotation selected
+			let selectedItems = ZoteroPane.getSelectedItems();
 
-			// Intercept note/annotation export
-			if (type === 'export') {
-				log("Export translators requested, checking for annotation copy...");
+			if (selectedItems && selectedItems.length === 1) {
+				let item = selectedItems[0];
 
-				// Find the Note Markdown translator and modify it
-				translators.forEach(translator => {
-					if (translator.label === 'Note Markdown') {
-						log("Found Note Markdown translator, overriding...");
+				if (item.isAnnotation && item.isAnnotation()) {
+					Zotero.debug("Better Copy: Intercepting copy of annotation from items pane");
 
-						let originalCode = translator.code;
-						translator.code = function () {
-							// Your custom formatting logic here
-							log("Custom Note Markdown translator running!");
+					let formattedText = this.formatAnnotation(item);
+					if (formattedText) {
+						this.copyToClipboard(formattedText);
+						event.preventDefault();
 
-							// Get the annotation being copied
-							// This is a simplified approach - you might need to adjust based on Zotero's internal structure
-							return originalCode.apply(this, arguments);
-						};
+						new Zotero.ProgressWindow()
+							.createLine({
+								text: "Annotation copied with Better Copy formatting",
+								type: "success"
+							})
+							.show();
 					}
-				});
+				}
+			}
+		} catch (e) {
+			Zotero.debug("Better Copy: Error in handleGeneralCopy: " + e);
+		}
+	},
+
+	addKeyboardShortcut: function () {
+		// Add a custom keyboard shortcut (Ctrl+Shift+C / Cmd+Shift+C)
+		document.addEventListener('keydown', (event) => {
+			if ((event.ctrlKey || event.metaKey) && event.shiftKey && event.key === 'C') {
+				this.copySelectedAnnotationFormatted();
+				event.preventDefault();
+			}
+		}, true);
+	},
+
+	copySelectedAnnotationFormatted: function () {
+		try {
+			let selectedItems = ZoteroPane.getSelectedItems();
+
+			if (selectedItems && selectedItems.length === 1) {
+				let item = selectedItems[0];
+
+				if (item.isAnnotation && item.isAnnotation()) {
+					let formattedText = this.formatAnnotation(item);
+					if (formattedText) {
+						this.copyToClipboard(formattedText);
+
+						new Zotero.ProgressWindow()
+							.createLine({
+								text: "Annotation copied with Better Copy formatting",
+								type: "success"
+							})
+							.show();
+					}
+				}
+			}
+		} catch (e) {
+			Zotero.debug("Better Copy: Error in copySelectedAnnotationFormatted: " + e);
+		}
+	},
+
+	formatAnnotation: function (annotation) {
+		try {
+			if (!annotation) return "";
+
+			// Get parent item
+			let parentItem = Zotero.Items.get(annotation.parentItemID);
+
+			// Extract annotation data
+			let text = annotation.annotationText || "";
+			let page = annotation.annotationPageLabel || annotation.annotationPage || "";
+			let comment = annotation.annotationComment || "";
+
+			// Extract parent item data
+			let title = parentItem ? parentItem.getField("title") : "";
+			let creators = "";
+			let year = "";
+
+			if (parentItem) {
+				let creatorObjs = parentItem.getCreators();
+				if (creatorObjs && creatorObjs.length > 0) {
+					creators = creatorObjs.map(c => c.lastName || c.name).join(", ");
+				}
+
+				let dateField = parentItem.getField("date");
+				if (dateField) {
+					let dateMatch = dateField.match(/\d{4}/);
+					year = dateMatch ? dateMatch[0] : dateField;
+				}
 			}
 
-			return translators;
-		};
+			// Get tags
+			let tags = "";
+			let tagObjs = annotation.getTags();
+			if (tagObjs && tagObjs.length > 0) {
+				tags = tagObjs.map(t => `#${t.tag}`).join(" ");
+			}
 
-		log("Better Copy: Successfully set up translation override.");
-	} catch (e) {
-		log("Error in overrideCopyAnnotation: " + e);
-	}
-}
+			// Get format template from preferences
+			let format = Zotero.Prefs.get("extensions.better-copy.format", false);
+			if (!format) {
+				format = "> ${text}\n\n**${creators} (${year})** - *${title}* - Page ${page}\n\n${tags}";
+			}
 
-// Initialize when Zotero is ready
-if (typeof Zotero !== 'undefined') {
-	Zotero.Promise.delay(1000).then(() => {
-		overrideCopyAnnotation();
-	});
-} else {
-	window.addEventListener('load', function () {
-		if (typeof Zotero !== 'undefined') {
-			Zotero.Promise.delay(1000).then(() => {
-				overrideCopyAnnotation();
-			});
+			// Replace template variables
+			let result = format
+				.replace(/\$\{text\}/g, text)
+				.replace(/\$\{page\}/g, page)
+				.replace(/\$\{title\}/g, title)
+				.replace(/\$\{creators\}/g, creators)
+				.replace(/\$\{year\}/g, year)
+				.replace(/\$\{tags\}/g, tags)
+				.replace(/\$\{comment\}/g, comment);
+
+			Zotero.debug("Better Copy: Formatted annotation: " + result);
+			return result;
+
+		} catch (e) {
+			Zotero.debug("Better Copy: Error in formatAnnotation: " + e);
+			return annotation && annotation.annotationText ? annotation.annotationText : "";
 		}
-	});
-}
+	},
+
+	copyToClipboard: function (text) {
+		try {
+			const clipboardHelper = Components.classes["@mozilla.org/widget/clipboardhelper;1"]
+				.getService(Components.interfaces.nsIClipboardHelper);
+			clipboardHelper.copyString(text);
+		} catch (e) {
+			Zotero.debug("Better Copy: Error copying to clipboard: " + e);
+		}
+	},
+
+	openPreferences: function () {
+		let prefWindow = window.openDialog(
+			"chrome://better-copy/content/prefs.xul",
+			"better-copy-prefs",
+			"chrome,titlebar,toolbar,centerscreen,modal",
+			null
+		);
+	}
+};
+
+// Initialize the plugin
+window.addEventListener('load', function () {
+	// Wait a bit for Zotero to be ready
+	setTimeout(() => {
+		BetterCopy.init();
+	}, 2000);
+}, false);
 
 
